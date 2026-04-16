@@ -1,10 +1,48 @@
-import { writeFileSync } from 'node:fs';
+import {
+    appendFileSync
+} from 'node:fs';
+import {
+    createInterface
+} from 'node:readline';
 
-const content = "Test content!";
+const readline = createInterface({
+    input: process.stdin,
+    output: process.stdout
+})
 
-try{
-    writeFileSync('./test.txt', content)
-    console.log('Success!')
-}catch(err){
-    console.error(err)
+const readLineAsync = (message) =>
+    new Promise((resolve) => readline.question(message, resolve));
+
+class Person {
+    constructor(name = "", number = "", email = "") {
+        this.name = name;
+        this.number = number;
+        this.email = email;
+    }
+
+    saveToCSV() {
+        const content = `${this.name},${this.number},${this.email}\n`;
+        try {
+            appendFileSync('./contacts.csv', content);
+            console.log(`${this.name} saved!`)
+        } catch (err) {
+            console.error(err);
+        }
+    }
 }
+const startApp = async () => {
+    let shouldContinue = true;
+    while (shouldContinue) {
+        const name = await readLineAsync("Contact Name: ");
+        const number = await readLineAsync("Contact Number: ");
+        const email = await readLineAsync("Contact Email: ");
+
+        const person = new Person(name, number, email);
+        person.saveToCSV();
+
+        const response = await readLineAsync("Continue? [y to continue]: ");
+        shouldContinue = response.toLowerCase() === "y";
+    }
+    readline.close();
+}
+startApp(); //Closes the readline interface, ending the application.
